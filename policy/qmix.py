@@ -69,6 +69,8 @@ class QMIX:
                 batch[key] = torch.tensor(batch[key], dtype=torch.long)
             else:
                 batch[key] = torch.tensor(batch[key], dtype=torch.float32)
+            # print('batch[{}]:'.format(key), batch[key].shape)
+        # exit()
         s, s_next, u, r, avail_u, avail_u_next, terminated = batch['s'], batch['s_next'], batch['u'], \
                                                              batch['r'],  batch['avail_u'], batch['avail_u_next'],\
                                                              batch['terminated']
@@ -84,6 +86,7 @@ class QMIX:
             terminated = terminated.cuda()
             mask = mask.cuda()
         # 取每个agent动作对应的Q值，并且把最后不需要的一维去掉，因为最后一维只有一个值了
+        # from IPython import embed; embed()
         q_evals = torch.gather(q_evals, dim=3, index=u).squeeze(3)
 
         # 得到target_q
@@ -96,8 +99,11 @@ class QMIX:
         targets = r + self.args.gamma * q_total_target * (1 - terminated)
 
         td_error = (q_total_eval - targets.detach())
+        # print('batch size:', s.shape[0])
+        # print('td_error.shape:', td_error.shape)
+        # print('mask.shape:', mask.shape)
         masked_td_error = mask * td_error  # 抹掉填充的经验的td_error
-
+        # from IPython import embed; embed()
         # 不能直接用mean，因为还有许多经验是没用的，所以要求和再比真实的经验数，才是真正的均值
         loss = (masked_td_error ** 2).sum() / mask.sum()
         self.optimizer.zero_grad()
@@ -113,6 +119,7 @@ class QMIX:
         # 取出所有episode上该transition_idx的经验，u_onehot要取出所有，因为要用到上一条
         obs, obs_next, u_onehot = batch['o'][:, transition_idx], \
                                   batch['o_next'][:, transition_idx], batch['u_onehot'][:]
+        
         episode_num = obs.shape[0]
         inputs, inputs_next = [], []
         inputs.append(obs)
@@ -135,6 +142,7 @@ class QMIX:
         # 因为这里所有agent共享一个神经网络，每条数据中带上了自己的编号，所以还是自己的数据
         inputs = torch.cat([x.reshape(episode_num * self.args.n_agents, -1) for x in inputs], dim=1)
         inputs_next = torch.cat([x.reshape(episode_num * self.args.n_agents, -1) for x in inputs_next], dim=1)
+        # from IPython import embed; embed()
         return inputs, inputs_next
 
     def get_q_values(self, batch, max_episode_len):
@@ -159,6 +167,7 @@ class QMIX:
         # 把该列表转化成(episode个数, max_episode_len， n_agents，n_actions)的数组
         q_evals = torch.stack(q_evals, dim=1)
         q_targets = torch.stack(q_targets, dim=1)
+        # from IPython import embed; embed()
         return q_evals, q_targets
 
     def init_hidden(self, episode_num):

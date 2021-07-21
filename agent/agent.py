@@ -37,6 +37,9 @@ class Agents:
         elif args.alg == 'reinforce':
             from policy.reinforce import Reinforce
             self.policy = Reinforce(args)
+        elif args.alg == 'fp':
+            from policy.fp import FP
+            self.policy = FP(args)
         else:
             raise Exception("No such algorithm")
         self.args = args

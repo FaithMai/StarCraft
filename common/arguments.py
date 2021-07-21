@@ -31,7 +31,7 @@ def get_common_args():
     parser.add_argument('--result_dir', type=str, default='./result', help='result directory of the policy')
     parser.add_argument('--load_model', type=bool, default=False, help='whether to load the pretrained model')
     parser.add_argument('--evaluate', type=bool, default=False, help='whether to evaluate the model')
-    parser.add_argument('--cuda', type=bool, default=False, help='whether to use the GPU')
+    parser.add_argument('--cuda', type=bool, default=True, help='whether to use the GPU')
     args = parser.parse_args()
     return args
 
@@ -43,6 +43,37 @@ def get_coma_args(args):
     args.critic_dim = 128
     args.lr_actor = 1e-4
     args.lr_critic = 1e-3
+
+    # epsilon-greedy
+    args.epsilon = 0.5
+    args.anneal_epsilon = 0.00064
+    args.min_epsilon = 0.02
+    args.epsilon_anneal_scale = 'episode'
+
+    # lambda of td-lambda return
+    args.td_lambda = 0.8
+
+    # how often to save the model
+    args.save_cycle = 5000
+
+    # how often to update the target_net
+    args.target_update_cycle = 200
+
+    # prevent gradient explosion
+    args.grad_norm_clip = 10
+
+    return args
+
+# arguments of fp
+def get_fp_args(args):
+    # network
+    args.rnn_hidden_dim = 64
+    args.critic_dim = 128
+    args.lr_actor = 1e-4
+    args.lr_critic = 1e-3
+    # attention net
+    args.encoder_dim = 32
+    args.decoder_dim = 10
 
     # epsilon-greedy
     args.epsilon = 0.5

@@ -111,6 +111,7 @@ class COMA:
         # 计算advantage
         baseline = (q_values * action_prob).sum(dim=3, keepdim=True).squeeze(3).detach()
         advantage = (q_taken - baseline).detach()
+
         loss = - ((advantage * log_pi_taken) * mask).sum() / mask.sum()
         self.rnn_optimizer.zero_grad()
         loss.backward()

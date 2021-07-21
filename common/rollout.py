@@ -51,6 +51,13 @@ class RolloutWorker:
             # time.sleep(0.2)
             obs = self.env.get_obs()
             state = self.env.get_state()
+            # print('obs：', len(obs))
+            # print('obs：', obs[0].shape)
+            # print('obs：', obs[0])
+            # print('state：', len(state))
+            # print('state：', type(state[0]))
+            # print('state：', state)
+            # exit()
             actions, avail_actions, actions_onehot = [], [], []
             for agent_id in range(self.n_agents):
                 avail_action = self.env.get_avail_agent_actions(agent_id)
@@ -69,6 +76,7 @@ class RolloutWorker:
                 last_action[agent_id] = action_onehot
 
             reward, terminated, info = self.env.step(actions)
+            # print('info:',info)
             win_tag = True if terminated and 'battle_won' in info and info['battle_won'] else False
             o.append(obs)
             s.append(state)
@@ -129,6 +137,8 @@ class RolloutWorker:
         # add episode dim
         for key in episode.keys():
             episode[key] = np.array([episode[key]])
+        #     print('episode[{}]:'.format(key), episode[key].shape)
+        # exit()
         if not evaluate:
             self.epsilon = epsilon
         if self.args.alg == 'maven':

@@ -55,4 +55,5 @@ class QMixNet(nn.Module):
 
         q_total = torch.bmm(hidden, w2) + b2  # (1920, 1, 1)
         q_total = q_total.view(episode_num, -1, 1)  # (32, 60, 1)
+        # from IPython import embed; embed()
         return q_total
